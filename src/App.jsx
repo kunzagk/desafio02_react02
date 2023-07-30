@@ -1,40 +1,45 @@
-import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+
 import Navigation from "./components/Navbar";
 import Home from "./views/Home";
-import Favoritos from "./views/Favoritos";
+import Pokemon from "./views/Pokemon";
 import MyContext from "./contexts/MyContext";
-import NotFound from './views/NotFound'
-import "./main.css";
+import NotFound from "./views/NotFound";
+import Pokedex from "./views/Pokedex";
 
-export default function App() {
-  const endpoint = "/fotos.json";
+function App() {
   const [data, setData] = useState([]);
 
   const getData = async (url) => {
-    const response = await fetch(url);
-    const data = await response.json();
-    setData(data.photos);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      const Pokemons = data.results;
+      setData(Pokemons);
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
   useEffect(() => {
-    getData(endpoint);
+    getData('https://pokeapi.co/api/v2/pokemon?limit=2000');
   }, []);
 
-  const allState = {data,setData};
-
   return (
-    <MyContext.Provider value={allState}>
-      <div className="App">
-        <BrowserRouter>
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/favoritos" element={<Favoritos />} />
-            <Route path='*' element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
+    <MyContext.Provider value={{ data }}>
+      <BrowserRouter>
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/pokedex" element={<Pokedex />} />
+          <Route path="/pokedex/:name" element={<Pokemon />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </MyContext.Provider>
   );
 }
+
+export default App;
